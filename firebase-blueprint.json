@@ -1,0 +1,584 @@
+{
+  "entities": {
+    "Department": {
+      "title": "Department",
+      "description": "Clinical department metadata at MediStream",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "code": { "type": "string", "minLength": 2, "maxLength": 16 },
+        "floor": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "description": { "type": "string", "minLength": 2, "maxLength": 400 },
+        "headDoctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "code", "floor", "description", "headDoctorId", "updatedAt"]
+    },
+    "Doctor": {
+      "title": "Doctor",
+      "description": "Attending physician public directory profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "departmentId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "departmentName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "specialty": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "qualifications": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "experienceYears": { "type": "number" },
+        "consultationFee": { "type": "number" },
+        "languages": { "type": "array" },
+        "roomNumber": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "bio": { "type": "string", "minLength": 2, "maxLength": 600 },
+        "acceptingNewPatients": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "name",
+        "departmentId",
+        "departmentName",
+        "specialty",
+        "qualifications",
+        "experienceYears",
+        "consultationFee",
+        "languages",
+        "roomNumber",
+        "bio",
+        "acceptingNewPatients",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Server-provisioned administrator membership doc",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "format": "email", "maxLength": 160 },
+        "grantedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "grantedAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Publicly scoped non-PII user account profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "role": { "type": "string", "enum": ["patient", "doctor", "staff", "admin"] },
+        "mfaEnabled": { "type": "boolean" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "role", "mfaEnabled", "active", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII subcollection document for user account",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "format": "email", "maxLength": 160 },
+        "patientId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "lastLoginAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "updatedAt"]
+    },
+    "PatientRecord": {
+      "title": "PatientRecord",
+      "description": "AES-256-GCM encrypted patient chart stored in Firestore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "mrn": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "dateOfBirth": { "type": "string", "minLength": 4, "maxLength": 20 },
+        "gender": { "type": "string", "enum": ["Female", "Male", "Other"] },
+        "bloodGroup": { "type": "string", "minLength": 1, "maxLength": 10 },
+        "maskedPhone": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "maskedEmail": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "primaryDepartment": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "assignedDoctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "assignedDoctorName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "encryptionCipher": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "phoneEncrypted": { "type": "string", "maxLength": 1024 },
+        "emailEncrypted": { "type": "string", "maxLength": 1024 },
+        "allergiesEncrypted": { "type": "string", "maxLength": 2048 },
+        "medicalHistoryEncrypted": { "type": "string", "maxLength": 4096 },
+        "clinicalNotesEncrypted": { "type": "string", "maxLength": 4096 },
+        "prescriptionsEncrypted": { "type": "string", "maxLength": 2048 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "mrn",
+        "fullName",
+        "dateOfBirth",
+        "gender",
+        "bloodGroup",
+        "maskedPhone",
+        "maskedEmail",
+        "primaryDepartment",
+        "assignedDoctorId",
+        "assignedDoctorName",
+        "encryptionCipher",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Outpatient appointment booking record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "bookingCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "patientId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "doctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "doctorName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "departmentId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "departmentName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "date": { "type": "string", "minLength": 8, "maxLength": 20 },
+        "timeSlot": { "type": "string", "minLength": 4, "maxLength": 16 },
+        "visitType": { "type": "string", "enum": ["In-Person Consultation", "Follow-Up Review", "Telehealth Video"] },
+        "reasonSummary": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["Confirmed", "Checked-In", "Completed", "Cancelled"] },
+        "paymentStatus": { "type": "string", "enum": ["Paid", "Pending", "Refunded"] },
+        "amountPaid": { "type": "number" },
+        "invoiceId": { "type": "string", "maxLength": 64 },
+        "reminderStatus": { "type": "string", "enum": ["Scheduled", "Sent", "Opted-Out"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "bookingCode",
+        "patientId",
+        "patientName",
+        "doctorId",
+        "doctorName",
+        "departmentId",
+        "departmentName",
+        "date",
+        "timeSlot",
+        "visitType",
+        "reasonSummary",
+        "status",
+        "paymentStatus",
+        "amountPaid",
+        "reminderStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PaymentTransaction": {
+      "title": "PaymentTransaction",
+      "description": "Consultation payment settlement record in INR",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "invoiceId": { "type": "string", "minLength": 3, "maxLength": 64 },
+        "appointmentId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "bookingCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "doctorName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "departmentName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "subtotal": { "type": "number" },
+        "insuranceDiscount": { "type": "number" },
+        "platformFee": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "method": { "type": "string", "enum": ["Card", "Insurance Copay", "Instant Bank / UPI"] },
+        "lastFourOrRef": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "status": { "type": "string", "enum": ["Paid", "Pending", "Refunded"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "invoiceId",
+        "appointmentId",
+        "bookingCode",
+        "patientName",
+        "doctorName",
+        "departmentName",
+        "subtotal",
+        "insuranceDiscount",
+        "platformFee",
+        "totalAmount",
+        "method",
+        "lastFourOrRef",
+        "status",
+        "createdAt"
+      ]
+    },
+    "EmailReminder": {
+      "title": "EmailReminder",
+      "description": "HIPAA-safe appointment email reminder notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "appointmentId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "bookingCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "recipientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "maskedRecipientEmail": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "doctorName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "departmentName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "visitDate": { "type": "string", "minLength": 8, "maxLength": 20 },
+        "visitTime": { "type": "string", "minLength": 4, "maxLength": 16 },
+        "subject": { "type": "string", "minLength": 4, "maxLength": 200 },
+        "bodyPreview": { "type": "string", "minLength": 4, "maxLength": 600 },
+        "channel": { "type": "string", "enum": ["Automated Scheduler", "Manual Staff Trigger"] },
+        "status": { "type": "string", "enum": ["Queued", "Sent"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "appointmentId",
+        "bookingCode",
+        "recipientName",
+        "maskedRecipientEmail",
+        "doctorName",
+        "departmentName",
+        "visitDate",
+        "visitTime",
+        "subject",
+        "bodyPreview",
+        "channel",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "Hospital-wide HIPAA and billing configuration",
+      "type": "object",
+      "properties": {
+        "hospitalName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "hipaaEncryptionAlgorithm": { "type": "string", "minLength": 4, "maxLength": 80 },
+        "currencySymbol": { "type": "string", "minLength": 1, "maxLength": 8 },
+        "platformProcessingFee": { "type": "number" },
+        "defaultInsuranceCoveragePct": { "type": "number" },
+        "reminderLeadHours": { "type": "number" },
+        "enforceMfaForAllPortals": { "type": "boolean" },
+        "sessionTimeoutMinutes": { "type": "number" },
+        "updatedBy": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "hospitalName",
+        "hipaaEncryptionAlgorithm",
+        "currencySymbol",
+        "platformProcessingFee",
+        "defaultInsuranceCoveragePct",
+        "reminderLeadHours",
+        "enforceMfaForAllPortals",
+        "sessionTimeoutMinutes",
+        "updatedBy",
+        "updatedAt"
+      ]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable HIPAA audit log entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorEmail": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "actorRole": { "type": "string", "enum": ["patient", "doctor", "staff", "admin", "anonymous", "system"] },
+        "portal": { "type": "string", "enum": ["user", "doctor", "admin", "public", "system"] },
+        "action": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "resourceType": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "resourceId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "outcome": { "type": "string", "enum": ["ALLOWED", "DENIED"] },
+        "details": { "type": "string", "minLength": 2, "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "actorUid",
+        "actorEmail",
+        "actorRole",
+        "portal",
+        "action",
+        "resourceType",
+        "resourceId",
+        "outcome",
+        "details",
+        "createdAt"
+      ]
+    },
+    "AmbulanceUnit": {
+      "title": "AmbulanceUnit",
+      "description": "MediStream emergency ambulance vehicle unit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "vehicleNumber": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "unitName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "unitType": {
+          "type": "string",
+          "enum": [
+            "Basic Life Support (BLS)",
+            "Advanced Cardiac Life Support (ACLS)",
+            "Neonatal & Pediatric ICU"
+          ]
+        },
+        "driverName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "paramedicName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "contactPhone": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "baseLocation": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "baseFeeInr": { "type": "number" },
+        "perKmFeeInr": { "type": "number" },
+        "status": { "type": "string", "enum": ["Available", "Dispatched", "Maintenance"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "vehicleNumber",
+        "unitName",
+        "unitType",
+        "driverName",
+        "paramedicName",
+        "contactPhone",
+        "baseLocation",
+        "baseFeeInr",
+        "perKmFeeInr",
+        "status",
+        "updatedAt"
+      ]
+    },
+    "AmbulanceDispatch": {
+      "title": "AmbulanceDispatch",
+      "description": "Emergency ambulance dispatch request and tracking record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "dispatchCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "unitId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "vehicleNumber": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "unitType": {
+          "type": "string",
+          "enum": [
+            "Basic Life Support (BLS)",
+            "Advanced Cardiac Life Support (ACLS)",
+            "Neonatal & Pediatric ICU"
+          ]
+        },
+        "driverName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "driverPhone": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "pickupAddress": { "type": "string", "minLength": 3, "maxLength": 300 },
+        "landmark": { "type": "string", "maxLength": 160 },
+        "priority": {
+          "type": "string",
+          "enum": ["Critical Emergency", "Urgent Transfer", "Scheduled Patient Transport"]
+        },
+        "clinicalCondition": { "type": "string", "maxLength": 300 },
+        "distanceKm": { "type": "number" },
+        "estimatedEtaMinutes": { "type": "number" },
+        "estimatedFareInr": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Dispatched",
+            "En Route",
+            "Arrived at Pickup",
+            "In Transit to Hospital",
+            "Completed",
+            "Cancelled"
+          ]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "dispatchCode",
+        "unitId",
+        "vehicleNumber",
+        "unitType",
+        "driverName",
+        "driverPhone",
+        "patientName",
+        "pickupAddress",
+        "landmark",
+        "priority",
+        "clinicalCondition",
+        "distanceKm",
+        "estimatedEtaMinutes",
+        "estimatedFareInr",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClinicalEncounter": {
+      "title": "ClinicalEncounter",
+      "description": "Structured SOAP clinical encounter and vitals recorded by an attending physician",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "encounterCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "patientId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "doctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "doctorName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "departmentName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "visitDate": { "type": "string", "minLength": 8, "maxLength": 20 },
+        "visitType": { "type": "string", "enum": ["In-Person Consultation", "Follow-Up Review", "Telehealth Video"] },
+        "assessment": { "type": "string", "minLength": 2, "maxLength": 500 },
+        "plan": { "type": "string", "minLength": 2, "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerUid", "encounterCode", "patientId", "patientName", "doctorId", "doctorName", "departmentName", "visitDate", "visitType", "assessment", "plan", "createdAt"]
+    },
+    "DigitalPrescription": {
+      "title": "DigitalPrescription",
+      "description": "Digital e-prescription issued by an attending physician",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "rxCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "patientId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "doctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "doctorName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "diagnosis": { "type": "string", "minLength": 2, "maxLength": 300 },
+        "status": { "type": "string", "enum": ["Active", "Completed", "Discontinued"] },
+        "issuedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerUid", "rxCode", "patientId", "patientName", "doctorId", "doctorName", "diagnosis", "status", "issuedAt"]
+    },
+    "LabOrder": {
+      "title": "LabOrder",
+      "description": "Diagnostic laboratory or radiology order and result report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "patientId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "doctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "testName": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "category": { "type": "string", "enum": ["Hematology", "Biochemistry", "Cardiac Diagnostics", "Neuro Diagnostics", "Radiology"] },
+        "priority": { "type": "string", "enum": ["Routine", "Urgent / STAT"] },
+        "status": { "type": "string", "enum": ["Ordered", "Sample Collected", "Results Ready", "Reviewed"] },
+        "orderedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerUid", "orderCode", "patientId", "patientName", "doctorId", "testName", "category", "priority", "status", "orderedAt", "updatedAt"]
+    },
+    "SpecialistReferral": {
+      "title": "SpecialistReferral",
+      "description": "Inter-departmental specialist referral record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "referralCode": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "patientId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "patientName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "fromDoctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "toDoctorId": { "type": "string", "minLength": 2, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "urgency": { "type": "string", "enum": ["Routine", "Urgent", "Emergency"] },
+        "reason": { "type": "string", "minLength": 2, "maxLength": 300 },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Scheduled", "Completed", "Declined"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerUid", "referralCode", "patientId", "patientName", "fromDoctorId", "toDoctorId", "urgency", "reason", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/departments/{departmentId}": {
+      "schema": { "$ref": "#/entities/Department" },
+      "description": "Public hospital clinical departments"
+    },
+    "/doctors/{doctorId}": {
+      "schema": { "$ref": "#/entities/Doctor" },
+      "description": "Public South Indian specialist directory"
+    },
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Admin role membership lookup"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Non-PII user account metadata"
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Isolated user PII subcollection"
+    },
+    "/patients/{patientId}": {
+      "schema": { "$ref": "#/entities/PatientRecord" },
+      "description": "AES-256-GCM encrypted patient charts"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Patient appointment bookings"
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/PaymentTransaction" },
+      "description": "INR payment settlement transactions"
+    },
+    "/reminders/{reminderId}": {
+      "schema": { "$ref": "#/entities/EmailReminder" },
+      "description": "HIPAA-safe automated visit email reminders"
+    },
+    "/encounters/{encounterId}": {
+      "schema": { "$ref": "#/entities/ClinicalEncounter" },
+      "description": "Physician SOAP clinical encounters and vitals"
+    },
+    "/prescriptions/{prescriptionId}": {
+      "schema": { "$ref": "#/entities/DigitalPrescription" },
+      "description": "Physician digital e-prescriptions"
+    },
+    "/labOrders/{orderId}": {
+      "schema": { "$ref": "#/entities/LabOrder" },
+      "description": "Diagnostic laboratory & imaging orders"
+    },
+    "/referrals/{referralId}": {
+      "schema": { "$ref": "#/entities/SpecialistReferral" },
+      "description": "Inter-departmental specialist referrals"
+    },
+    "/system/{configId}": {
+      "schema": { "$ref": "#/entities/SystemSettings" },
+      "description": "Hospital system and HIPAA policy configuration"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable HIPAA security and access audit trail"
+    },
+    "/ambulances/{unitId}": {
+      "schema": { "$ref": "#/entities/AmbulanceUnit" },
+      "description": "MediStream emergency ambulance fleet units"
+    },
+    "/ambulanceDispatches/{dispatchId}": {
+      "schema": { "$ref": "#/entities/AmbulanceDispatch" },
+      "description": "Emergency ambulance dispatch requests"
+    }
+  }
+}
